@@ -4,23 +4,23 @@ import TurtleGraphics
 import Turtle
 -- import TurtleExtras
 
-main = runTextual coolExample
+main = runTextual $ spiral 10 10
 
-coolExample = times 3 (right 5) >*> idle
-
+-- | Returns a program that draws a finite spiral.
 spiral :: Double -> Double -> Program a
-spiral size _angle | size > 100 = die
-spiral size angle  | otherwise = (forward size) >*> 
-                                 (right angle) >*> 
-                                 (spiral (size + 2) angle)
+spiral size angle | size > 100 = die
+                  | otherwise = forward size >*>
+                                right angle >*>
+                                spiral (size + 2) angle
 
+-- | Returns a program that draws a infinite spiral.
 spiralForever :: Double -> Double -> Program a
-spiralForever size angle = forever $ (forward size) >*> 
-                                     (right angle) >*> 
-                                     (spiralForever (size + 2) angle)
+spiralForever size angle = forever $ forward size >*>
+                                     right angle >*>
+                                     spiralForever (size + 2) angle
 
--- spiralForeverLimited :: Double -> Double -> Program a
--- spiralForeverLimited size angle = limited 73 $ spiralForever size angle
-
+-- | Returns a program that draws a finite spiral
+-- followed by an infinite spiral.
 spiralThenSpiral :: Double -> Double -> Program a
-spiralThenSpiral size angle = (spiral size angle) >*> (spiralForever size angle)
+spiralThenSpiral size angle = spiral size angle >*>
+                              spiralForever size angle
