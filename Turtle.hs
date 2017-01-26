@@ -1,115 +1,123 @@
 {-# LANGUAGE GADTs #-}
--- | proper module documentation here
-module Turtle (
-  -- * The turtle type(s)
-  -- Non-exhaustive list of possible types: Turtle, Program, Action, Operation ...
-  Program, Turtle
 
-  -- * Primitive operations
+-- | EDSL for Turtle (similiar to Logo programming)
+module Turtle (
+
+  -- * Types
+  Program, Color, Time
+
+  -- * Constructors
   , idle, forward, backward, right, left, die
 
-  -- * Derived operations
+  -- * Combinators
   , times, forever, limited, lifespan, (>*>)
 
   -- * Run functions
-  , runTextual, run
-  -- ...
+  , runTextual
 
   ) where
 
 import Prelude hiding (Right, Left)
 import Control.Applicative (Applicative(..))
-import Control.Monad (liftM, ap)
+import Control.Monad (liftM, ap, replicateM_)
 
-data Turtle = Turtle (Double, Double) (Double, Double)
+-- | Type for pen color with three doubles representing a RGB value.
+type Color = (Double, Double, Double)
 
--- | Description of your type here...
---
---   You can use newtype instead of data if you wish.
+-- | Type for abstract time used by limited and lifespan combinators.
+type Time = Int
+
+-- | A single instruction or a set of instructions that defines
+-- the behaviour of the turtle.
 data Program a where
+
   -- Constructors
   Idle     :: Program a
   Die      :: Program a
   PenUp    :: Program a
   PenDown  :: Program a
+  PenColor :: Color  -> Program a
   Forward  :: Double -> Program a
   Backward :: Double -> Program a
   Right    :: Double -> Program a
   Left     :: Double -> Program a
+
   -- Combinators
   Times    :: Int -> Program a -> Program a
   Forever  :: Program a -> Program a
-  Limited  :: Int -> Program a -> Program a
-  Lifespan :: Int -> Program a -> Program a
+  Limited  :: Time -> Program a -> Program a
+  Lifespan :: Time -> Program a -> Program a
   Chain    :: Program a -> Program a -> Program a
+
   -- Monadic oprations
   Return   :: a -> Program a
   Bind     :: Program a -> (a -> Program b) -> Program b
 
 
+-- | A program that does nothing.
 idle :: Program a
 idle = Idle
 
+-- | Moves turtle forward a number of steps.
 forward :: Double -> Program a
 forward = Forward
 
+-- | Moves turtle backwards a number of steps.
 backward :: Double -> Program a
 backward = Backward
 
+-- | Turns the angle of the turtle to the right.
 right :: Double -> Program a
 right = Right
 
+-- | Turns the angle of the turtle to the left.
 left :: Double -> Program a
 left = Left
 
+-- | Repeats a program a number of times.
 times :: Int -> Program a -> Program a
 times = Times
 
+-- | Repeats a program forever.
 forever :: Program a -> Program a
 forever = Forever
 
-limited  :: Int -> Program a -> Program a
+-- | Runs a program for a limited amount of time.
+limited  :: Time -> Program a -> Program a
 limited = Limited
 
+-- | Kills the turtle after a specified amount of time.
+lifespan :: Time -> Program a -> Program a
+lifespan = Lifespan
+
+-- | Kills the turtle making it unable to perform any more actions.
 die :: Program a
 die = Die
 
-lifespan :: Int -> Program a -> Program a
-lifespan = Lifespan
-
+-- | Sequencing operator used to run programs one after antother.
 (>*>) :: Program a -> Program a -> Program a
 (>*>) = Chain
 
-runTextual :: Program a -> IO() 
-runTextual Idle          = putStrLn $ "Idle."
-runTextual Die           = putStrLn $ "Die."
+-- | Observes a program and prints the actions in sequential order.
+runTextual :: Program a -> IO()
+runTextual Idle          = putStrLn "Idle."
+runTextual Die           = putStrLn "Die."
 runTextual (Forward x)   = putStrLn $ "Move forward " ++ show x ++ " units."
 runTextual (Backward x)  = putStrLn $ "Move backward " ++ show x ++ " units."
 runTextual (Right d)     = putStrLn $ "Turn right " ++ show d ++ " degrees."
 runTextual (Left d)      = putStrLn $ "Turn left " ++ show d ++ " degrees."
-runTextual (Times i p)   = sequence_ $ replicate i $ runTextual p 
+runTextual (Times i p)   = replicateM_ i $ runTextual p
 runTextual (Forever p)   = sequence_ $ repeat $ runTextual p
-runTextual (Limited i p) = undefined 
+runTextual (Limited i p) = undefined
 runTextual (Chain p1 p2) = sequence_ [runTextual p1, runTextual p2]
-
-
-run :: Program a -> IO()
-run = undefined
--- run Idle         = putStr $ "Idle."
--- run (Forward x)  = putStr $ "Move forward " ++ show x ++ " units."
--- run (Backward x) = putStr $ "Move backward " ++ show x ++ " units."
--- run (Right d)    = putStr $ "Turn right " ++ show d ++ " degrees."
--- run (Left d)     = putStr $ "Turn left " ++ show d ++ " degrees."
--- run (Times i p)  = sequence_ $ replicate i $ runTextual p 
--- run (Forever p)  = sequence_ $ repeat $ runTextual p
 
 instance Monad Program where
   return = Return
   (>>=)  = Bind
 
-instance Functor Program where 
+instance Functor Program where
   fmap = liftM
 
-instance Applicative Program where 
+instance Applicative Program where
   pure  = return
   (<*>) = ap
