@@ -4,10 +4,10 @@
 module Turtle (
 
   -- * Types
-  Program, Color, Time
+  Program, Color, Time, Pos, Dir, Pen, Turtle(Dead, Alive)
 
   -- * Constructors
-  , idle, forward, backward, right, left, die
+  , idle, move, turn, forward, backward, right, left, die
 
   -- * Combinators
   , times, forever, limited, lifespan, (>*>)
@@ -18,7 +18,7 @@ module Turtle (
   ) where
 
 -- | Type for pen color with three doubles representing a RGB value.
-type Color = (Double, Double, Double)
+type Color = (Int, Int, Int)
 
 -- | Type for abstract time used by limited and lifespan combinators.
 type Time = Int
@@ -27,13 +27,13 @@ type Time = Int
 type Pos = (Int, Int)
 
 -- | Represents the direction of a turtle through an x and y coordinate.
-type Dir = (Int, Int)
+type Dir = (Double, Double)
 
 -- | Pen type containing color and bool telling whether pen is up or down.
 data Pen = Color Bool
 
 -- | Turtle type containing all relevant state information for a turtle.
-data Turtle = Dead | Alive Pos Dir
+data Turtle = Dead | Alive Pos Dir Color Bool
 
 -- | A single instruction or a set of instructions that defines
 -- the behaviour of the turtle.
@@ -62,6 +62,14 @@ idle = Idle
 die :: Program a
 die = Die
 
+-- | Moves turtle a number of steps.
+move :: Double -> Program a
+move = Move
+
+-- | Rotates the turtle n degrees.
+turn :: Double -> Program a
+turn = Turn
+
 -- | Runs a program for a limited amount of time.
 limited  :: Time -> Program a -> Program a
 limited = Limited
@@ -84,11 +92,11 @@ forward = Move
 backward :: Double -> Program a
 backward d = Move (-d)
 
--- | Turns the angle of the turtle to the right.
+-- | Rotates the turtle n degrees to the right.
 right :: Double -> Program a
 right d = Turn (-d)
 
--- | Turns the angle of the turtle to the left.
+-- | Rotates the turtle n degrees to the left.
 left :: Double -> Program a
 left = Turn
 
@@ -110,3 +118,5 @@ runTextual (Turn d)      | d < 0     = putStrLn $ "Turn right " ++ show d ++ " d
                          | otherwise = putStrLn $ "Turn left " ++ show d ++ " degrees."
 runTextual (Limited i p) = undefined
 runTextual (Chain p1 p2) = sequence_ [runTextual p1, runTextual p2]
+
+
