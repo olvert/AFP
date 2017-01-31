@@ -37,8 +37,8 @@ data Program a where
   PenUp    :: Program a
   PenDown  :: Program a
   PenColor :: Color  -> Program a
-  Move     :: Double -> Program a 
-  Turn     :: Double -> Program a 
+  Move     :: Double -> Program a
+  Turn     :: Double -> Program a
 
   -- Combinators
   Limited  :: Time -> Program a -> Program a
@@ -86,28 +86,19 @@ left = Turn
 
 -- | Repeats a program a number of times.
 times :: Int -> Program a -> Program a
-times = foldr (>*>) replicate
+times n p = foldr (>*>) p $ replicate (n-1) p
 
 -- | Repeats a program forever.
 forever :: Program a -> Program a
-forever = foldr (>*>) repeat
-
-
-
-
-
-
-
+forever p = foldr (>*>) p $ repeat p
 
 -- | Observes a program and prints the actions in sequential order.
 runTextual :: Program a -> IO()
 runTextual Idle          = putStrLn "Idle."
 runTextual Die           = putStrLn "Die."
-runTextual (Forward x)   = putStrLn $ "Move forward " ++ show x ++ " units."
-runTextual (Backward x)  = putStrLn $ "Move backward " ++ show x ++ " units."
-runTextual (Right d)     = putStrLn $ "Turn right " ++ show d ++ " degrees."
-runTextual (Left d)      = putStrLn $ "Turn left " ++ show d ++ " degrees."
-runTextual (Times i p)   = replicateM_ i $ runTextual p
-runTextual (Forever p)   = sequence_ $ repeat $ runTextual p
+runTextual (Move x)      | x >= 0    = putStrLn $ "Move forward " ++ show x ++ " units."
+                         | otherwise = putStrLn $ "Move backwards " ++ show x ++ " units."
+runTextual (Turn d)      | d < 0     = putStrLn $ "Turn right " ++ show d ++ " degrees."
+                         | otherwise = putStrLn $ "Turn left " ++ show d ++ " degrees."
 runTextual (Limited i p) = undefined
 runTextual (Chain p1 p2) = sequence_ [runTextual p1, runTextual p2]
