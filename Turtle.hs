@@ -17,15 +17,23 @@ module Turtle (
 
   ) where
 
-import Prelude hiding (Right, Left)
-import Control.Applicative (Applicative(..))
-import Control.Monad (liftM, ap, replicateM_)
-
 -- | Type for pen color with three doubles representing a RGB value.
 type Color = (Double, Double, Double)
 
 -- | Type for abstract time used by limited and lifespan combinators.
 type Time = Int
+
+-- | Represents the position of a turtle through an x and y coordinate.
+type Pos = (Int, Int)
+
+-- | Represents the direction of a turtle through an x and y coordinate.
+type Dir = (Int, Int)
+
+-- | Pen type containing color and bool telling whether pen is up or down.
+data Pen = Color Bool
+
+-- | Turtle type containing all relevant state information for a turtle.
+data Turtle = Dead | Alive Pos Dir
 
 -- | A single instruction or a set of instructions that defines
 -- the behaviour of the turtle.
