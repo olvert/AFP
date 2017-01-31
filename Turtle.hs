@@ -37,50 +37,22 @@ data Program a where
   PenUp    :: Program a
   PenDown  :: Program a
   PenColor :: Color  -> Program a
-  Forward  :: Double -> Program a
-  Backward :: Double -> Program a
-  Right    :: Double -> Program a
-  Left     :: Double -> Program a
+  Move     :: Double -> Program a 
+  Turn     :: Double -> Program a 
 
   -- Combinators
-  Times    :: Int -> Program a -> Program a
-  Forever  :: Program a -> Program a
   Limited  :: Time -> Program a -> Program a
   Lifespan :: Time -> Program a -> Program a
   Chain    :: Program a -> Program a -> Program a
-
-  -- Monadic oprations
-  Return   :: a -> Program a
-  Bind     :: Program a -> (a -> Program b) -> Program b
 
 
 -- | A program that does nothing.
 idle :: Program a
 idle = Idle
 
--- | Moves turtle forward a number of steps.
-forward :: Double -> Program a
-forward = Forward
-
--- | Moves turtle backwards a number of steps.
-backward :: Double -> Program a
-backward = Backward
-
--- | Turns the angle of the turtle to the right.
-right :: Double -> Program a
-right = Right
-
--- | Turns the angle of the turtle to the left.
-left :: Double -> Program a
-left = Left
-
--- | Repeats a program a number of times.
-times :: Int -> Program a -> Program a
-times = Times
-
--- | Repeats a program forever.
-forever :: Program a -> Program a
-forever = Forever
+-- | Kills the turtle making it unable to perform any more actions.
+die :: Program a
+die = Die
 
 -- | Runs a program for a limited amount of time.
 limited  :: Time -> Program a -> Program a
@@ -90,13 +62,42 @@ limited = Limited
 lifespan :: Time -> Program a -> Program a
 lifespan = Lifespan
 
--- | Kills the turtle making it unable to perform any more actions.
-die :: Program a
-die = Die
-
 -- | Sequencing operator used to run programs one after antother.
 (>*>) :: Program a -> Program a -> Program a
 (>*>) = Chain
+
+
+-- * Derived Operations
+-- | Moves turtle forward a number of steps.
+forward  :: Double -> Program a
+forward = Move
+
+-- | Moves turtle backwards a number of steps.
+backward :: Double -> Program a
+backward d = Move (-d)
+
+-- | Turns the angle of the turtle to the right.
+right :: Double -> Program a
+right d = Turn (-d)
+
+-- | Turns the angle of the turtle to the left.
+left :: Double -> Program a
+left = Turn
+
+-- | Repeats a program a number of times.
+times :: Int -> Program a -> Program a
+times = foldr (>*>) replicate
+
+-- | Repeats a program forever.
+forever :: Program a -> Program a
+forever = foldr (>*>) repeat
+
+
+
+
+
+
+
 
 -- | Observes a program and prints the actions in sequential order.
 runTextual :: Program a -> IO()
@@ -110,14 +111,3 @@ runTextual (Times i p)   = replicateM_ i $ runTextual p
 runTextual (Forever p)   = sequence_ $ repeat $ runTextual p
 runTextual (Limited i p) = undefined
 runTextual (Chain p1 p2) = sequence_ [runTextual p1, runTextual p2]
-
-instance Monad Program where
-  return = Return
-  (>>=)  = Bind
-
-instance Functor Program where
-  fmap = liftM
-
-instance Applicative Program where
-  pure  = return
-  (<*>) = ap
