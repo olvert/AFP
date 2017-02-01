@@ -6,7 +6,7 @@ import Turtle
 import Graphics.HGL
 import Data.Word
 
-runGraphical :: Program a -> IO ()
+runGraphical :: Program -> IO ()
 runGraphical p = runGraphics $ do
     w <- openWindowEx "Turtle!" Nothing (300, 300) DoubleBuffered (Just 1000)
     drawInWindow w (polygon [(0,0),(0,300),(300,300),(300,0)])
@@ -20,8 +20,7 @@ runGraphical p = runGraphics $ do
 
 -- Parse error in pattern... Are the runFunction suppose to be here?
 
-runProgram :: Program a -> Turtle -> (Turtle, [Graphic]) 
-runProgram _ Dead = (Dead, [])
+runProgram :: Program -> Turtle -> (Turtle, [Graphic])
 runProgram (idle) t = (t, [])
 runProgram (die) t = (Dead, [])
 -- runProgram (move d) t = (t, turtleLine d t)
@@ -31,17 +30,18 @@ runProgram (die) t = (Dead, [])
 --         (t2, g2) = runProgram p2 t1
 
 turtleLine :: Double -> Turtle -> (Turtle, Graphic)
-turtleLine d (Alive (x, y) (dirx, diry) color penDown) = 
-  (t', withRGB (toHglRgb color) $ line (x, y) newPos)
+turtleLine d (Alive (x, y) (dirx, diry) pen) =
+  (t', withRGB (toHglRgb c) $ line (x, y) newPos)
   where newPos = (x + round (dirx * d), y + round (diry * d))
-        t' = (Alive newPos (dirx, diry) color penDown)
+        t'     = Alive newPos (dirx, diry) pen
+        (Pen c b) = pen
 
 toHglRgb :: (Int, Int, Int) -> RGB
 toHglRgb (r,g,b) = RGB (fromIntegral r) (fromIntegral g) (fromIntegral b)
 
 rotate :: Turtle -> Double -> Turtle
-rotate (Alive pos (x,y) color penDown) d = (Alive pos newDir color penDown)  
-  where newDir = (x * cos d - y * sin d, x * sin d + y * cos d) 
+rotate (Alive pos (x,y) pen) d = Alive pos newDir pen
+  where newDir = (x * cos d - y * sin d, x * sin d + y * cos d)
 
 normalize :: Dir -> Dir
 normalize (x,y) = (x / l, y / l)
