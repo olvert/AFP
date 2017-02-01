@@ -4,7 +4,8 @@ import TurtleGraphics
 import Turtle
 import TurtleTextual
 
-main = runTextual $ spiral 10 10
+-- main = runTextual $ spiral 10 10
+main = runGraphical $ spiral 1 10
 
 -- | Returns a program that draws a finite spiral.
 spiral :: Double -> Double -> Program

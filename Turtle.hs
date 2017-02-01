@@ -7,7 +7,7 @@ module Turtle (
   Program (Idle, Die, PenUp, PenDown, PenColor, Move, Turn, Lifespan, Chain)
   , Turtle (Dead, Alive)
   , Pen (Pen)
-  , Color, Time, Pos, Dir
+  , Time, Pos, Dir, Color
 
   -- * Constructors
   , idle, move, turn, forward, backward, right, left, die
@@ -17,8 +17,10 @@ module Turtle (
 
   ) where
 
--- | Type for pen color with three doubles representing a RGB value.
-type Color = (Int, Int, Int)
+import Data.Word
+
+-- | Type for pen color representing a RGB value.
+type Color = (Word8, Word8, Word8)
 
 -- | Type for abstract time used by limited and lifespan combinators.
 type Time = Int
@@ -54,6 +56,7 @@ data Program where
   Chain    :: Program -> Program -> Program
 
 
+-- * Primitive Operations
 -- | A program that does nothing.
 idle :: Program
 idle = Idle

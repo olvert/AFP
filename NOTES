@@ -4,4 +4,12 @@ TODO:
   * Refactor limited into function instead of combinator
   * Export "everything" from Turtle.hs – DONE
   * Move runTextual to separate file – DONE
-  * Fix initial state for Turtle
+  * Fix initial state for Turtle – DONE
+
+
+DUMP:
+
+withColor Graphics.HGL.Red   $ line  (100, 200) (200, 100)
+         , withColor Graphics.HGL.Green $ line  (100, 100) (200, 200)
+         , withColor Graphics.HGL.Blue  $ line  (150, 100) (150, 200)
+         , withColor Graphics.HGL.Black $ line  (100, 150) (200, 150)
