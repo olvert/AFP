@@ -74,7 +74,7 @@ turn :: Double -> Program
 turn = Turn
 
 -- | Runs a program for a limited amount of time.
-limited  :: Time -> Program -> Program
+limited :: Time -> Program -> Program
 limited = Limited
 
 -- | Kills the turtle after a specified amount of time.

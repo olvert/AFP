@@ -5,11 +5,11 @@ import Turtle
 import TurtleTextual
 
 -- main = runTextual $ spiral 10 10
-main = runGraphical $ spiral 1 10
+main = runGraphical $ spiralThenSpiral 10 90
 
 -- | Returns a program that draws a finite spiral.
 spiral :: Double -> Double -> Program
-spiral size angle | size > 100 = die
+spiral size angle | size > 100 = idle
                   | otherwise = forward size >*>
                                 right angle >*>
                                 spiral (size + 2) angle

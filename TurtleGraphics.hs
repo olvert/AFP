@@ -8,7 +8,7 @@ import Data.Word
 
 runGraphical :: Program -> IO ()
 runGraphical p = runGraphics $ do
-    w <- openWindowEx "Turtle!" Nothing (1000, 1000) DoubleBuffered (Just 1000)
+    w <- openWindowEx "Turtle!" Nothing (1000, 1000) DoubleBuffered (Just 200)
     drawInWindow w (polygon [(0,0),(0,1000),(1000,1000),(1000,0)])
     let (_t, gs) = runProgram p defaultTurtle
     onTick w gs
@@ -24,6 +24,7 @@ runProgram (Chain p1 p2) t  = (t2, g1 ++ g2)
          (t2, g2) = runProgram p2 t1
 
 turtleLine :: Double -> Turtle -> (Turtle, [Graphic])
+turtleLine d Dead = (Dead, []) -- Why is this needed?
 turtleLine d (Alive (x, y) (dirx, diry) pen) =
   (t', [withRGB (toHglRgb c) $ line (x, y) newPos])
   where newPos = (x + round (dirx * d), y + round (diry * d))
@@ -34,7 +35,8 @@ toHglRgb :: Turtle.Color -> RGB
 toHglRgb (r,g,b) = RGB r g b
 
 rotate :: Turtle -> Double -> Turtle
-rotate (Alive pos (x,y) pen) d = Alive pos newDir pen
+rotate Dead _d = Dead
+rotate (Alive pos (x,y) pen) d = Alive pos (normalize newDir) pen
   where newDir = (x * cos d - y * sin d, x * sin d + y * cos d)
 
 normalize :: Dir -> Dir
@@ -52,4 +54,4 @@ defaultPen :: Turtle.Pen
 defaultPen = Pen (0, 0, 0) True
 
 defaultTurtle :: Turtle
-defaultTurtle = Alive (150,100) (150,200) defaultPen
+defaultTurtle = Alive (500,500) (0,1) defaultPen
