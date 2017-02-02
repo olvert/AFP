@@ -1,7 +1,7 @@
 TODO:
 
   * Change Program a to just Program – DONE
-  * Refactor limited into function instead of combinator
+  * Refactor limited into function instead of combinator – DONE
   * Export "everything" from Turtle.hs – DONE
   * Move runTextual to separate file – DONE
   * Fix initial state for Turtle – DONE

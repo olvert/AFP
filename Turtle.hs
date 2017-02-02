@@ -4,7 +4,7 @@
 module Turtle (
 
   -- * Types
-  Program (Idle, Die, PenUp, PenDown, PenColor, Move, Turn, Lifespan, Chain)
+  Program (Idle, Die, PenUp, PenDown, PenColor, Move, Turn, Chain)
   , Turtle (Dead, Alive)
   , Pen (Pen)
   , Time, Pos, Dir, Color
@@ -51,8 +51,6 @@ data Program where
   Turn     :: Double -> Program
 
   -- Combinators
-  Limited  :: Time -> Program -> Program
-  Lifespan :: Time -> Program -> Program
   Chain    :: Program -> Program -> Program
 
 
@@ -72,14 +70,6 @@ move = Move
 -- | Rotates the turtle n degrees.
 turn :: Double -> Program
 turn = Turn
-
--- | Runs a program for a limited amount of time.
-limited :: Time -> Program -> Program
-limited = Limited
-
--- | Kills the turtle after a specified amount of time.
-lifespan :: Time -> Program -> Program
-lifespan = Lifespan
 
 -- | Sequencing operator used to run programs one after antother.
 (>*>) :: Program -> Program -> Program
@@ -110,3 +100,20 @@ times n p = foldr (>*>) p $ replicate (n-1) p
 -- | Repeats a program forever.
 forever :: Program -> Program
 forever p = foldr (>*>) p $ repeat p
+
+-- | Runs a program for a limited amount of time.
+-- TODO: Improve this one to make it cut of program instead of filling w Idle
+limited :: Time -> Program -> Program
+limited t (Chain p1 p2) = limited t p1 >*> limited (t - cost p1) p2
+limited t p | (t - cost p) < 0 = Idle
+            | otherwise = p
+
+-- | Kills the turtle after a specified amount of time.
+lifespan :: Time -> Program -> Program
+lifespan t p = limited t p >*> Die
+
+-- * Helper Functions
+
+cost :: Program -> Time
+cost (Chain p1 p2) = cost p1 + cost p2
+cost _p = 1
