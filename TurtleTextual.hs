@@ -19,8 +19,8 @@ runProgram (PenColor c) f     = form f $ "Changing color to: " ++ srgb
         (r,g,b) = c
 runProgram (Move x) f         | x >= 0    = form f $ "Move forward " ++ show x ++ " units."
                               | otherwise = form f $ "Move backwards " ++ show x ++ " units."
-runProgram (Turn d) f         | d < 0     = form f $ "Turn right " ++ show d ++ " degrees."
-                              | otherwise = form f $ "Turn left " ++ show d ++ " degrees."
+runProgram (Turn d) f         | d < 0     = form f $ "Turn right " ++ show d ++ " radians."
+                              | otherwise = form f $ "Turn left " ++ show d ++ " radians."
 runProgram (Chain p1 p2) f    = runProgram p1 f ++ runProgram p2 f
 runProgram (Parallel p1 p2) f = everyOther (runProgram p1 f1) (runProgram p2 f2)
   where (f1, f2) = (f++"A", f++"B")
