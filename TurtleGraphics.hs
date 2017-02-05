@@ -2,7 +2,7 @@
 module TurtleGraphics (runGraphical) where
 
 import Turtle
-
+import Utils
 import Graphics.HGL
 import Data.Word
 
@@ -58,8 +58,3 @@ defaultPen = Pen (0, 0, 0) True
 
 defaultTurtle :: Turtle
 defaultTurtle = Alive (500,500) (0,1) defaultPen
-
-everyOther :: [a] -> [a] -> [a]
-everyOther xs     []     = xs
-everyOther []     ys     = ys
-everyOther (x:xs) (y:ys) = x : y : everyOther xs ys
