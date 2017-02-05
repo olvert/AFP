@@ -1,5 +1,5 @@
 -- | A run fuction printing the actions of a program in sequential order.
-module TurtleTextual where
+module TurtleTextual (runTextual) where
 
 import Turtle
 import Utils
@@ -10,8 +10,13 @@ runTextual p = putStrLn $ unlines $ runProgram p "A"
 
 -- | Observes a program and returns the actions in sequential as strings.
 runProgram :: Program -> String -> [String]
-runProgram Idle f             = lst "Idle."
-runProgram Die f              = lst "Die."
+runProgram Idle f             = form f "Idle."
+runProgram Die f              = form f "Die."
+runProgram PenUp f            = form f "Pen up."
+runProgram PenDown f          = form f "Pen down."
+runProgram (PenColor c) f     = form f $ "Changing color to: " ++ srgb
+  where srgb    = concat ["R:", show r, " G:", show g, " B:", show b]
+        (r,g,b) = c
 runProgram (Move x) f         | x >= 0    = form f $ "Move forward " ++ show x ++ " units."
                               | otherwise = form f $ "Move backwards " ++ show x ++ " units."
 runProgram (Turn d) f         | d < 0     = form f $ "Turn right " ++ show d ++ " degrees."
