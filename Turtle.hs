@@ -10,7 +10,7 @@ module Turtle (
   , Time, Pos, Dir, Color
 
   -- * Constructors
-  , idle, move, turn, forward, backward, right, left, die
+  , idle, move, turn, forward, backward, right, left, die, penColor, penUp, penDown
 
   -- * Combinators
   , times, forever, limited, lifespan, (>*>), (<|>)
@@ -63,6 +63,18 @@ idle = Idle
 -- | Kills the turtle making it unable to perform any more actions.
 die :: Program
 die = Die
+
+-- | Stops the turtle from drawing
+penUp :: Program
+penUp = PenUp
+
+-- | Makes the turtle draw
+penDown :: Program
+penDown = PenDown
+
+-- | Changes the color the turtle draws with
+penColor :: Color -> Program
+penColor = PenColor
 
 -- | Moves turtle a number of steps.
 move :: Double -> Program

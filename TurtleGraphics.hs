@@ -8,15 +8,19 @@ import Data.Word
 
 runGraphical :: Program -> IO ()
 runGraphical p = runGraphics $ do
-    w <- openWindowEx "Turtle!" Nothing (1000, 1000) DoubleBuffered (Just 200)
+    w <- openWindowEx "Turtle!" Nothing (1000, 1000) DoubleBuffered (Just 1)
     drawInWindow w (polygon [(0,0),(0,1000),(1000,1000),(1000,0)])
     let (_t, gs) = runProgram p defaultTurtle
     onTick w gs
     getKey w >> return ()
 
 runProgram :: Program -> Turtle -> (Turtle, [Graphic])
+runProgram _ Dead             = (Dead, [])
 runProgram Idle t             = (t, [])
 runProgram Die t              = (Dead, [])
+runProgram PenUp t            = (runPenDown t False, [])
+runProgram PenDown t          = (runPenDown t True, [])
+runProgram (PenColor c) t     = (runPenColor t c, [])
 runProgram (Move d) t         = turtleLine d t
 runProgram (Turn d) t         = (rotate t d, [])
 runProgram (Chain p1 p2) t    = (t2, g1 ++ g2)
@@ -26,13 +30,18 @@ runProgram (Parallel p1 p2) t = (t, everyOther g1 g2)
   where (_t1, g1) = runProgram p1 t
         (_t2, g2) = runProgram p2 t
 
+runPenColor :: Turtle -> Turtle.Color -> Turtle
+runPenColor (Alive p d (Pen c b)) c' = (Alive p d (Pen c' b))
+
+runPenDown :: Turtle -> Bool -> Turtle
+runPenDown (Alive p d (Pen c b)) b' = (Alive p d (Pen c b'))
+
 turtleLine :: Double -> Turtle -> (Turtle, [Graphic])
 turtleLine d Dead = (Dead, []) -- Why is this needed?
-turtleLine d (Alive (x, y) (dirx, diry) pen) =
-  (t', [withRGB (toHglRgb c) $ line (x, y) newPos])
+turtleLine d (Alive (x, y) (dirx, diry) (Pen c b)) = (t', action)
   where newPos = (x + round (dirx * d), y + round (diry * d))
-        t'     = Alive newPos (dirx, diry) pen
-        (Pen c b) = pen
+        t'     = Alive newPos (dirx, diry) (Pen c b)
+        action = if b then [withRGB (toHglRgb c) $ line (x, y) newPos] else []
 
 toHglRgb :: Turtle.Color -> RGB
 toHglRgb (r,g,b) = RGB r g b
@@ -57,4 +66,4 @@ defaultPen :: Turtle.Pen
 defaultPen = Pen (0, 0, 0) True
 
 defaultTurtle :: Turtle
-defaultTurtle = Alive (500,500) (0,1) defaultPen
+defaultTurtle = Alive (500,500) (0,-1) defaultPen
