@@ -18,6 +18,7 @@ module Turtle (
   ) where
 
 import Data.Word
+import Data.Maybe
 
 -- | Type for pen color representing a RGB value.
 type Color = (Word8, Word8, Word8)
@@ -113,16 +114,31 @@ left = Turn
 times :: Int -> Program -> Program
 times n p = foldr (>*>) p $ replicate (n-1) p
 
--- | Repeats a program forever.
+-- | Repeats a Program forever.
 forever :: Program -> Program
 forever p = foldr (>*>) p $ repeat p
 
+limited :: Time -> Program -> Program
+limited t p = snd $ limited' t p
+
+
 -- | Runs a program for a limited amount of time.
 -- TODO: Improve this one to make it cut of program instead of filling w Idle
-limited :: Time -> Program -> Program
-limited t (Chain p1 p2) = limited t p1 >*> limited (t - cost p1) p2
-limited t p | (t - cost p) < 0 = Idle
-            | otherwise = p
+limited' :: Time -> Program -> (Time, Program)
+limited' t (Chain p1 p2) = case limited' t p1 of
+                            (-1, p1') ->  (-1, p1')
+                            (t', p1') ->  let (t'', p2') = limited' t' p2 in
+                                          (t'', p1' >*> p2')
+limited' t (Parallel p1 p2) = (t, p1' <|> p2')
+  where (_, p1') = limited' t p1
+        (_, p2') = limited' t p2
+limited' t p | limit t p = (-1, Idle)
+             | otherwise = (t - cost p, p)
+
+
+-- | Helper function for limited.
+limit :: Time -> Program -> Bool
+limit t p = (t - cost p) < 0
 
 -- | Kills the turtle after a specified amount of time.
 lifespan :: Time -> Program -> Program
@@ -131,5 +147,6 @@ lifespan t p = limited t p >*> Die
 -- * Helper Functions
 
 cost :: Program -> Time
-cost (Chain p1 p2) = cost p1 + cost p2
-cost _p            = 1
+cost (Chain p1 p2)    = undefined -- ost p1 + cost p2
+cost (Parallel p1 p2) = undefined -- max (cost p1) (cost p2)
+cost _p               = 1
