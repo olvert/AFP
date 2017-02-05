@@ -4,7 +4,7 @@
 module Turtle (
 
   -- * Types
-  Program (Idle, Die, PenUp, PenDown, PenColor, Move, Turn, Chain)
+  Program (Idle, Die, PenUp, PenDown, PenColor, Move, Turn, Chain, Parallel)
   , Turtle (Dead, Alive)
   , Pen (Pen)
   , Time, Pos, Dir, Color
@@ -13,7 +13,7 @@ module Turtle (
   , idle, move, turn, forward, backward, right, left, die
 
   -- * Combinators
-  , times, forever, limited, lifespan, (>*>)
+  , times, forever, limited, lifespan, (>*>), (<|>)
 
   ) where
 
@@ -52,6 +52,7 @@ data Program where
 
   -- Combinators
   Chain    :: Program -> Program -> Program
+  Parallel :: Program -> Program -> Program
 
 
 -- * Primitive Operations
@@ -71,10 +72,13 @@ move = Move
 turn :: Double -> Program
 turn = Turn
 
--- | Sequencing operator used to run programs one after antother.
+-- | Sequencing operator used to run programs one after another.
 (>*>) :: Program -> Program -> Program
 (>*>) = Chain
 
+-- | Parallel operator used to run programs in parallel.
+(<|>) :: Program -> Program -> Program
+(<|>) = Parallel
 
 -- * Derived Operations
 -- | Moves turtle forward a number of steps.
@@ -116,4 +120,4 @@ lifespan t p = limited t p >*> Die
 
 cost :: Program -> Time
 cost (Chain p1 p2) = cost p1 + cost p2
-cost _p = 1
+cost _p            = 1

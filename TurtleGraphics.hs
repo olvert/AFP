@@ -15,13 +15,16 @@ runGraphical p = runGraphics $ do
     getKey w >> return ()
 
 runProgram :: Program -> Turtle -> (Turtle, [Graphic])
-runProgram Idle t           = (t, [])
-runProgram Die t            = (Dead, [])
-runProgram (Move d) t       = turtleLine d t
-runProgram (Turn d) t       = (rotate t d, [])
-runProgram (Chain p1 p2) t  = (t2, g1 ++ g2)
-   where (t1, g1) = runProgram p1 t
-         (t2, g2) = runProgram p2 t1
+runProgram Idle t             = (t, [])
+runProgram Die t              = (Dead, [])
+runProgram (Move d) t         = turtleLine d t
+runProgram (Turn d) t         = (rotate t d, [])
+runProgram (Chain p1 p2) t    = (t2, g1 ++ g2)
+  where (t1, g1) = runProgram p1 t
+        (t2, g2) = runProgram p2 t1
+runProgram (Parallel p1 p2) t = (t, everyOther g1 g2)
+  where (_t1, g1) = runProgram p1 t
+        (_t2, g2) = runProgram p2 t
 
 turtleLine :: Double -> Turtle -> (Turtle, [Graphic])
 turtleLine d Dead = (Dead, []) -- Why is this needed?
@@ -55,3 +58,8 @@ defaultPen = Pen (0, 0, 0) True
 
 defaultTurtle :: Turtle
 defaultTurtle = Alive (500,500) (0,1) defaultPen
+
+everyOther :: [a] -> [a] -> [a]
+everyOther xs     []     = xs
+everyOther []     ys     = ys
+everyOther (x:xs) (y:ys) = x : y : everyOther xs ys
