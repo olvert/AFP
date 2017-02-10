@@ -14,8 +14,8 @@ import Control.Monad (liftM, ap)
 
 -- Types
 data Replay q r a where
-  IO :: (Show a, Read a) => IO a -> Replay q r a
-  Ask :: q -> Replay q r r
+  Io     :: (Show a, Read a) => IO a -> Replay q r a
+  Ask    :: q -> Replay q r r
   Return :: a -> Replay q r a
   Bind   :: Replay q r a -> (a -> Replay q r b) -> Replay q r b
 
@@ -38,7 +38,7 @@ instance Applicative (Replay q r) where
 
 
 io  :: (Show a, Read a) => IO a -> Replay q r a
-io = IO
+io =  Io
 ask :: q -> Replay q r r
 ask = Ask
 
@@ -47,8 +47,10 @@ emptyTrace = []
 addAnswer  :: Trace r -> r -> Trace r
 addAnswer t a = t ++ [Answer a]
 
-run :: Replay q r a -> Trace r -> IO (Either (q, Trace r) a)
--- run IO a b t = do
---   show t
---   return Left ((), t)
-run = undefined
+run :: Replay q r a -> Trace r -> IO (Either (q, Trace r) a) -- typechecks but does not do what we want..
+run (Io a) t = do a' <- a
+                  return (Right a')
+run (Ask q) t = return (Left(q, t))
+run (Return a) t = return (Right a)
+-- run (Bind r f) t = run r t
+-- run = undefined
