@@ -4,7 +4,8 @@ import Data.Time
 import Replay
 
 main :: IO ()
-main = return ()
+main = do run example emptyTrace
+          return ()
 
 
 example :: Replay String String Int
