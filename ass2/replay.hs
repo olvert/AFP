@@ -11,6 +11,8 @@ module Replay (
 
 import Control.Applicative
 import Control.Monad (liftM, ap)
+import Data.Time
+
 
 -- Types
 data Replay q r a where
@@ -35,6 +37,7 @@ instance Functor (Replay q r) where
 instance Applicative (Replay q r) where
   pure  = return
   (<*>) = ap
+
 
 io  :: (Show a, Read a) => IO a -> Replay q r a
 io =  IO
