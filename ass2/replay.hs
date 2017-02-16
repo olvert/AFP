@@ -1,4 +1,7 @@
 {-# LANGUAGE GADTs, FlexibleInstances #-}
+
+-- | Module containing functions and constructors for creating replay
+-- applications that can be executed using traces from previous executions. 
 module Replay (
   Replay, Trace, Item (Result, Answer),
 
