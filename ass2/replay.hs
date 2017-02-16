@@ -30,9 +30,8 @@ type Trace r = [Item r]
 data Item r = Answer r | Result String
   deriving (Show, Read)
 
--- | Type for routing information in interp function.
+-- Internal type for routing information in interp function.
 newtype T q r a = T (Either q a, Trace r)
-
 
 -- * Operations
 instance Monad (Replay q r) where
@@ -71,7 +70,7 @@ run r t = do
     T (Right a, t) -> return (Right a)
     T (Left q, t)  -> return (Left (q,t))
 
--- | Internal function for evaluating replay applications and generating traces.
+-- Internal function for evaluating replay applications and generating traces.
 interp :: Replay q r a -> Trace r -> IO (T q r a)
 interp (IO a) []               = do
   a' <- a
