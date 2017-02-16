@@ -63,7 +63,7 @@ checkTestCase (TestCase name i r p) = do
 testCases :: [TestCase]
 testCases =
   [ TestCase
-    { testName    = "test1"
+    { testName    = "default test"
     , testInput   = [3,4]
     , testResult  = (8, 1)
     , testProgram = \tick -> do
@@ -72,7 +72,52 @@ testCases =
         b <- io (return 1)
         c <- ask () -- should be 4
         return (a + b + c)
-    }
+    } ,
+    TestCase
+    { testName    = "empty test"
+    , testInput   = []
+    , testResult  = (0, 0)
+    , testProgram = \tick -> return 0
+    } ,
+    TestCase
+    { testName    = "only io test"
+    , testInput   = []
+    , testResult  = (1, 2)
+    , testProgram = \tick -> do
+        io tick
+        a <- io (return 3)
+        io tick
+        b <- io (return 4)
+        return (b - a)
+    } ,
+    TestCase
+    { testName    = "only ask test"
+    , testInput   = [1,2,3]
+    , testResult  = (6, 0)
+    , testProgram = \tick -> do
+        a <- ask ()
+        b <- ask () 
+        c <- ask ()
+        return (a + b + c)
+    } ,
+    TestCase
+    { testName    = "long test"
+    , testInput   = [1,2,3,4,5]
+    , testResult  = (22, 3)
+    , testProgram = \tick -> do
+        a <- ask ()
+        io tick
+        b <- io (return 5)
+        io tick
+        c <- io (return 1)
+        d <- ask () 
+        e <- ask ()
+        io tick
+        f <- ask () 
+        g <- io (return 1)
+        h <- ask ()
+        return (a + b + c + d + e + f + g + h)
+    } 
   ]
 
 -- | Running all the test cases.
