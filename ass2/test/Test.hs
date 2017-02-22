@@ -96,7 +96,7 @@ testCases =
     , testResult  = (6, 0)
     , testProgram = \tick -> do
         a <- ask ()
-        b <- ask () 
+        b <- ask ()
         c <- ask ()
         return (a + b + c)
     } ,
@@ -110,16 +110,38 @@ testCases =
         b <- io (return 5)
         io tick
         c <- io (return 1)
-        d <- ask () 
+        d <- ask ()
         e <- ask ()
         io tick
-        f <- ask () 
+        f <- ask ()
         g <- io (return 1)
         h <- ask ()
         return (a + b + c + d + e + f + g + h)
-    } 
+    } ,
+    TestCase
+    { testName    = "monad laws 1"
+    , testInput   = [3,4]
+    , testResult  = (8, 1)
+    , testProgram = \tick -> do
+        return undefined -- XXX: doesn't advance the trace position
+        io tick
+        a <- ask ()
+        b <- io (return 1)
+        c <- ask ()
+        return (a + b + c)
+    } ,
+    TestCase
+    { testName    = "monad laws 2"
+    , testInput   = [3,4]
+    , testResult  = (8, 1)
+    , testProgram = \tick -> do
+        a <- do io tick -- XXX: advances the trace position once
+                ask ()  -- XXX: advances the trace position a second time
+        b <- io (return 1)
+        c <- ask ()
+        return (a + b + c)
+    }
   ]
 
 -- | Running all the test cases.
 runTests = mapM checkTestCase testCases
-

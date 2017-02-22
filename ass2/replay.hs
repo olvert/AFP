@@ -1,7 +1,7 @@
 {-# LANGUAGE GADTs, FlexibleInstances #-}
 
 -- | Module containing functions and constructors for creating replay
--- applications that can be executed using traces from previous executions. 
+-- applications that can be executed using traces from previous executions.
 module Replay (
   Replay, Trace, Item (Result, Answer),
 
@@ -34,7 +34,7 @@ data Item r = Answer r | Result String
   deriving (Show, Read)
 
 -- Internal type for routing information in interp function.
-newtype T q r a = T (Either q a, Trace r)
+newtype T q r a = T (Either q a, Trace r, Trace r)
 
 -- * Operations
 instance Monad (Replay q r) where
@@ -66,32 +66,26 @@ addAnswer  :: Trace r -> r -> Trace r
 addAnswer t a = t ++ [Answer a]
 
 -- | Main function used for evaluating replay applications.
+-- 'it' stands from input trace and 'ot' for output trace
 run :: Replay q r a -> Trace r -> IO (Either (q, Trace r) a)
 run r t = do
-  r' <- interp r t
+  r' <- interp r t []
   case r' of
-    T (Right a, t) -> return (Right a)
-    T (Left q, t)  -> return (Left (q,t))
+    T (Right a, it, ot) -> return (Right a)
+    T (Left q, it, ot)  -> return (Left (q,ot))
 
 -- Internal function for evaluating replay applications and generating traces.
-interp :: Replay q r a -> Trace r -> IO (T q r a)
-interp (IO a) []               = do
+interp :: Replay q r a -> Trace r -> Trace r -> IO (T q r a)
+interp (IO a) [] ot               = do
   a' <- a
-  return $ T (Right a', [Result $ show a'])
-interp (IO a) (Result s : ts)  = return $ T (Right $ read s, [Result s])
-interp (Ask q) []              = return $ T (Left q, [])
-interp (Ask q) (Answer r : ts) = return $ T (Right r, [Answer r])
-interp (Return a) _            = return $ T (Right a, [])
-interp (Bind r f) ts           = do
-  r' <- interp r ts
+  return $ T (Right a', [], ot ++ [Result $ show a'])
+interp (IO a) (Result i : it) ot  = return $ T (Right $ read i, it, ot ++ [Result i])
+interp (Ask q) [] ot              = return $ T (Left q, [], ot)
+interp (Ask q) (Answer i : it) ot = return $ T (Right i, it, ot ++ [Answer i])
+interp (Return a) it ot           = return $ T (Right a, it, ot)
+interp (Bind r f) it ot           = do
+  r' <- interp r it ot
   case r' of
-    T (Right a, ts')  -> do
-      T (r, ts'') <- interp (f a) (tail' ts)
-      return $ T (r, ts' ++ ts'')
-    T (Left q, ts') -> return $ T (Left q, ts)
-interp _ _ = error "No match in pattern!"
-
--- | Wrapper function for tail that handles empty lists as well.
-tail' :: [a] -> [a]
-tail' []      = []
-tail' as      = tail as
+    T (Right a, it', ot') -> interp (f a) it' ot'
+    T (Left q, it', ot')  -> return $ T (Left q, it', ot')
+interp _ _ _ = error "No match in pattern!"
