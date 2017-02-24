@@ -1,22 +1,53 @@
-module WebForm (
-    Web, Form, Element(P, Input), Arribute, Name, Value, Answers, runWeb
-    ) where
+module WebForm (Web, Form, Answers, runWeb) where
 
 import Replay
+import Web.Scotty
+import Data.Text.Lazy (Text, pack)
+import Control.Monad.IO.Class
 
 type Web a = Replay Form Answers a
 
-type Form = (String, [Element])
+type ID = String
 
-data Element = P String | Input [Attribute]
+type Form = [FQuestion]
+type FQuestion = (ID, String)
 
-type Attribute = (Name, Value)
+type Answers = [FAnswer]
+type FAnswer = (ID, String)
 
-type Name = String
+runWeb :: Web () -> ActionM ()
+runWeb web = do
+  t <- getRawTrace
+  r <- liftIO $ run web $ parseTrace t
+  case r of
+    Left (f, t') -> html $ pack $ unlines $ getFormHtml f
 
-type Value = String
+getFormHtml :: Form -> [String]
+getFormHtml = concatMap getQuestionHtml
 
-type Answers = String
+getQuestionHtml :: FQuestion -> [String]
+getQuestionHtml (i, q) = [question, input]
+  where question = concat ["<p>", q, "</p>"]
+        input    = concat ["<input name=", i, ">"]
 
-runWeb :: Web a -> ActionM a
-runWeb = undefined
+parseTrace :: [String] -> Trace Answers
+parseTrace = map parse
+  where parse s = Answer $ read s
+
+getRawTrace :: ActionM [String]
+getRawTrace = getRawTrace' 0
+  where
+    getRawTrace' :: Int -> ActionM [String]
+    getRawTrace' i = do
+      input <- getInput i
+      case input of
+        [] -> return []
+        s  -> do
+          ss <- getRawTrace' (i+1)
+          return (s:ss)
+
+    getInput :: Int -> ActionM String
+    getInput i = param (packInt i) `rescue` \ _ -> return ""
+
+    packInt :: Int -> Text
+    packInt i = pack $ show i

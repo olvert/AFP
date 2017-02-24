@@ -4,6 +4,8 @@ module Main where
 import Web.Scotty
 import Data.Monoid
 import Data.Text.Lazy
+import WebForm
+import Replay
 
 main :: IO ()
 main = scotty 3000 $ do
@@ -11,15 +13,13 @@ main = scotty 3000 $ do
     post "/" serve
   where
     serve :: ActionM ()
-    serve = do
-        i <- getInput
-        html (page i)
+    serve = runWeb example
 
     getInput :: ActionM Text
     getInput = param "text_input_id" `rescue` \ _ -> return ""
 
     page :: Text -> Text
-    page s = mconcat 
+    page s = mconcat
         [ "<html><body>"
         , "<p>Input was: ", s, "</p>"
         , "<form method=post>"
@@ -29,3 +29,9 @@ main = scotty 3000 $ do
         , "</form>"
         , "</body></html>"
         ]
+
+example :: Web ()
+example = do
+  io (putStrLn "Hello!")
+  age <- ask [("age", "What is your age?"), ("leo", "Who is Leo?")]
+  return ()
