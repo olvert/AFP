@@ -88,4 +88,8 @@ interp (Bind r f) it ot           = do
   case r' of
     T (Right a, it', ot') -> interp (f a) it' ot'
     T (Left q, it', ot')  -> return $ T (Left q, it', ot')
-interp _ _ _ = error "No match in pattern!"
+
+interp r it ot = case r of
+  (Ask q) -> error "ASK: Mismatch in pattern"
+  (IO a)  -> error "IO: Mismatch in pattern"
+  _       -> error "?: Mismatch in pattern"
