@@ -61,7 +61,7 @@ getItemHtml (i, item) = concat
 
 parseTrace :: [String] -> Trace Answers
 parseTrace = map parse
-  where parse s = Answer $ read $ decode s
+  where parse s = read $ decode s
 
 getRawTrace :: ActionM [String]
 getRawTrace = getRawTrace' 0
