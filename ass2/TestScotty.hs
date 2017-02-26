@@ -16,4 +16,5 @@ example :: Web ()
 example = do
   io (putStrLn "Hello!")
   age <- ask [("age", "What is your age?"), ("leo", "Who is Leo?")]
+  quest <- ask [("hej1", "Ding!"), ("hej2", "Good loot?")]
   return ()
