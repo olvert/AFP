@@ -78,7 +78,7 @@ Test-Suite test-replay
   main-is:         Test.hs
   build-depends:   base, replay
 
-executable testform
+executable quizform
   hs-source-dirs:      .
   build-depends:       base          >= 4.0
                        , time          >= 1.6.0.1
