@@ -77,3 +77,13 @@ Test-Suite test-replay
   hs-source-dirs:  test
   main-is:         Test.hs
   build-depends:   base, replay
+
+executable testform
+  hs-source-dirs:      .
+  build-depends:       base          >= 4.0
+                       , time          >= 1.6.0.1
+                       , scotty        >= 0.11.0
+                       , text          >= 1.2.2.1
+                       , base64-string >= 0.2 
+                       , replay 
+  main-is: TestScotty.hs
