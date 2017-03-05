@@ -10,7 +10,7 @@ name:                replay
 -- PVP summary:      +-+------- breaking API changes
 --                   | | +----- non-breaking API additions
 --                   | | | +--- code changes with no API change
-version:             0.2.0.0
+version:             0.3.0.0
 
 -- A short (one-line) description of the package.
 synopsis:            A monad for replaying computations
@@ -51,7 +51,7 @@ cabal-version:       >=1.10
 
 library
   -- Modules exported by the library.
-  exposed-modules:    Replay
+  exposed-modules:    Replay, WebForm
 
   -- Modules included in this library but not exported.
   -- other-modules:
@@ -84,6 +84,6 @@ executable quizform
                        , time          >= 1.6.0.1
                        , scotty        >= 0.11.0
                        , text          >= 1.2.2.1
-                       , base64-string >= 0.2 
-                       , replay 
+                       , base64-string >= 0.2
+                       , replay
   main-is: TestScotty.hs
