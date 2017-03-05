@@ -35,10 +35,10 @@ data InputType = String | Num
   deriving (Show, Read, Eq)
 
 
-type EitherWeb = Either (Form, Trace Answers) ()
+type EitherWeb = Either (Form, Trace Answers) String
 
 -- | Takes a 'Web' and returns a 'ActionM' based on that monad.
-runWeb :: Web () -> ActionM ()
+runWeb :: Web String -> ActionM ()
 runWeb web = do
   (prev, curr) <- trace
   r <- liftIO $ run web $ nextTrace prev curr
@@ -46,7 +46,7 @@ runWeb web = do
 
   where
     nextHtml :: Maybe (Item Answers) -> EitherWeb -> Text
-    nextHtml _ (Right x) = serveResult
+    nextHtml _ (Right s) = serveResult s
     nextHtml Nothing (Left (f, t)) = serveForm f t
     nextHtml (Just as) (Left (f, t)) = serveFormE f t $ validate as
 
@@ -91,8 +91,8 @@ serveFormE f t bs = preProcess $
                            , getFormInputHtml f
                            , getErrorHtml $ and bs]
 
-serveResult :: Text
-serveResult = undefined
+serveResult :: String -> Text
+serveResult s = preProcess ["<p>", s, "</p>"]
 
 -- | Surround a list of Strings with the html tags: html, body, form with
 -- method attribute of type post.
